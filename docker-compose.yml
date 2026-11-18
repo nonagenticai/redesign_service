@@ -1,0 +1,131 @@
+services:
+  # ============================================================================
+  # PostgreSQL Database
+  # ============================================================================
+  redesign_service_postgres:
+    image: postgres:18-alpine
+    container_name: redesign_service_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: redesign_service
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+    ports:
+      - "5456:5432"
+    volumes:
+      - redesign_service_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - redesign-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # Redis Cache
+  # ============================================================================
+  redesign-service-redis:
+    image: redis:7-alpine
+    container_name: redesign_service_redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6396:6379"
+    volumes:
+      - redesign_service_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - redesign-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # Redesign Service API
+  # ============================================================================
+  redesign-service-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: redesign_service_api
+    environment:
+      # Application
+      ENVIRONMENT: production
+      APP_NAME: Redesign Service
+      APP_VERSION: 0.1.0
+
+      # Database
+      DATABASE_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD:-changeme}@redesign_service_postgres:5432/redesign_service
+      POSTGRES_POOL_MIN_SIZE: 2
+      POSTGRES_POOL_MAX_SIZE: 10
+      DATABASE_POOL_TIMEOUT: 30
+      DATABASE_POOL_RECYCLE: 3600
+      DATABASE_ECHO: "false"
+
+      # Redis
+      REDIS_URL: redis://redesign-service-redis:6379/0
+      REDIS_MAX_CONNECTIONS: 10
+
+      # API
+      API_HOST: 0.0.0.0
+      API_PORT: 6306
+      API_DEBUG: "false"
+      API_RELOAD: "false"
+      API_CORS_ORIGINS: "http://localhost:*,http://127.0.0.1:*"
+
+      # Auth
+      AUTH_ENABLED: "false"
+      DEFAULT_TENANT_ID: n8n-dev
+
+      # Storage
+      STORAGE_BACKEND: local
+      STORAGE_LOCAL_PATH: /app/data
+
+      # Logging
+      LOG_LEVEL: INFO
+      LOG_JSON_LOGS: "false"
+
+      # LLM
+      ANTHROPIC_API_KEY: ""
+      LLM_MODEL: claude-sonnet-4-20250514
+      LLM_TEMPERATURE: 0.5
+    ports:
+      - "6306:6306"
+    volumes:
+      - redesign_service_data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      redesign_service_postgres:
+        condition: service_healthy
+      redesign-service-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6306/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - redesign-network
+    restart: unless-stopped
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  redesign-network:
+    driver: bridge
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  redesign_service_postgres_data:
+    name: redesign_service_postgres_data
+  redesign_service_redis_data:
+    name: redesign_service_redis_data
+  redesign_service_data:
+    name: redesign_service_data

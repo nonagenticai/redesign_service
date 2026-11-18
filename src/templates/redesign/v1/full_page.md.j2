@@ -1,0 +1,70 @@
+Redesign the following web page to be more compelling, modern, and conversion-optimized.
+Output a single self-contained HTML file using Tailwind CSS (via CDN).
+
+## Original Page
+- URL: {{ url }}
+- Page type: {{ page_type or 'unknown' }}
+- Current HTML:
+{{ html_excerpt }}
+
+## Site Context
+- Audience: {{ audience }}
+- Brand colors: primary={{ primary_color }}, secondary={{ secondary_color }}
+- Tone: {{ tone }}
+{% if context_block %}
+
+## User Context
+{{ context_block }}
+{% endif %}
+
+## Issues to Address
+{{ findings_text }}
+
+## Design Direction: {{ style }}
+{{ style_desc }}
+
+## Requirements
+1. Self-contained HTML with Tailwind CDN link (`<script src="https://cdn.tailwindcss.com"></script>`)
+2. Preserve the site's actual content (don't invent text)
+3. Use the brand's color palette
+4. Improve: visual hierarchy, CTA placement, whitespace, typography, responsiveness
+5. Address the critique findings above
+6. Include `<!DOCTYPE html>`, `<html lang="en">`, and `<meta name="viewport" content="width=device-width, initial-scale=1.0">`
+
+## Responsive Design Rules
+- Use a mobile-first approach: start with the smallest screen and layer on complexity
+- Breakpoints: `sm:` (640px), `md:` (768px), `lg:` (1024px), `xl:` (1280px), `2xl:` (1536px)
+- Stack columns vertically on mobile; use grid/flex layouts on larger screens
+- Ensure touch targets are at least 44x44px on mobile
+- Hide non-essential elements on small screens rather than cramming content
+- Test that no horizontal scrollbar appears at any breakpoint
+
+## Semantic HTML Requirements
+- Use proper heading hierarchy: a single `<h1>` per page, then `<h2>`, `<h3>`, etc. in order without skipping levels
+- Use landmark elements: `<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<aside>`, `<footer>`
+- Use `<button>` for actions and `<a>` for navigation -- never use `<div>` or `<span>` as clickable elements
+- Wrap form inputs with `<label>` elements or use `for`/`id` associations
+- Use `<ul>`/`<ol>` for lists of items, not sequences of `<div>` elements
+
+## Performance Best Practices
+- Use `loading="lazy"` on all `<img>` elements that are below the fold
+- Minimize inline styles; prefer Tailwind utility classes
+- Avoid large inline SVGs when a simple icon class or emoji would suffice
+- Do not embed base64-encoded images or large data URIs
+- Keep the DOM tree shallow where possible (avoid deeply nested wrapper divs)
+
+## Image Placeholder Conventions
+- When the original page references images that are unavailable, use placeholder URLs from `https://placehold.co/`
+- Format: `https://placehold.co/{width}x{height}/{bg_color}/{text_color}?text={label}`
+- Example: `https://placehold.co/600x400/e2e8f0/475569?text=Product+Image`
+- Always include descriptive `alt` text on every image element
+
+## Accessibility Requirements
+- Every `<img>` must have a meaningful `alt` attribute (empty `alt=""` only for purely decorative images)
+- Add `aria-label` or `aria-labelledby` to interactive elements that lack visible text labels
+- Ensure color contrast meets WCAG AA: at least 4.5:1 for normal text, 3:1 for large text
+- Include focus-visible styles on all interactive elements (`focus:ring-2 focus:ring-offset-2`)
+- Use `role` attributes where semantic HTML alone is insufficient (e.g., `role="banner"`, `role="navigation"`)
+- Ensure all form controls have associated labels
+
+Output ONLY the HTML code in a ```html code block.

@@ -1,0 +1,103 @@
+services:
+  # ============================================================================
+  # PostgreSQL Database (Production)
+  # ============================================================================
+  redesign_service_postgres:
+    image: postgres:18-alpine
+    container_name: redesign_service_postgres_prod
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: redesign_service
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+    ports:
+      - "5456:5432"
+    volumes:
+      - redesign_service_postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - redesign-network
+    restart: always
+
+  # ============================================================================
+  # Redis Cache (Production)
+  # ============================================================================
+  redesign-service-redis:
+    image: redis:7-alpine
+    container_name: redesign_service_redis_prod
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6396:6379"
+    volumes:
+      - redesign_service_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - redesign-network
+    restart: always
+
+  # ============================================================================
+  # Redesign Service API (Production)
+  # ============================================================================
+  redesign-service-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: redesign_service_api_prod
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD}@redesign_service_postgres:5432/redesign_service
+      REDIS_URL: redis://redesign-service-redis:6379/0
+      API_HOST: 0.0.0.0
+      API_PORT: 6306
+      API_DEBUG: "false"
+      AUTH_ENABLED: "true"
+      STORAGE_BACKEND: local
+      STORAGE_LOCAL_PATH: /app/data
+      LOG_LEVEL: WARNING
+      LOG_JSON_LOGS: "true"
+    ports:
+      - "6306:6306"
+    volumes:
+      - redesign_service_data:/app/data
+    depends_on:
+      redesign_service_postgres:
+        condition: service_healthy
+      redesign-service-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6306/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - redesign-network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+networks:
+  redesign-network:
+    driver: bridge
+
+volumes:
+  redesign_service_postgres_data:
+    name: redesign_service_postgres_data_prod
+  redesign_service_redis_data:
+    name: redesign_service_redis_data_prod
+  redesign_service_data:
+    name: redesign_service_data_prod

@@ -1,0 +1,38 @@
+Refine the following redesign based on user feedback.
+Apply the requested changes while preserving the overall design direction.
+
+## Previous Redesign
+- Original page: {{ url }}
+- Page type: {{ page_type or 'unknown' }}
+- Design direction: {{ style }}
+- Brand primary color: {{ primary_color }}
+
+### Current HTML
+```html
+{{ html_excerpt }}
+```
+
+## User Feedback
+{{ feedback }}
+
+{% if focus_areas %}
+## Focus Areas
+The user wants you to concentrate on the following areas:
+{% for area in focus_areas %}
+- {{ area }}
+{% endfor %}
+{% endif %}
+
+## Style Description
+{{ style_desc }}
+
+## Requirements
+1. Apply the changes described in the user feedback above
+2. Keep the existing design direction ({{ style }}) intact unless the feedback explicitly asks to change it
+3. Output a single self-contained HTML file with Tailwind CSS via CDN (`<script src="https://cdn.tailwindcss.com"></script>`)
+4. Preserve all original content -- do not remove or invent text unless the feedback specifically requests it
+5. Only change what the feedback asks for; leave everything else as-is
+6. Maintain responsiveness and accessibility from the previous version
+7. Include `<!DOCTYPE html>`, `<meta name="viewport" content="width=device-width, initial-scale=1.0">`, and the Tailwind CDN script tag
+
+Output ONLY the refined HTML in a ```html code block.

@@ -1,0 +1,103 @@
+# ============================================================================
+# PRODUCTION MULTI-STAGE DOCKERFILE FOR REDESIGN_SERVICE
+# ============================================================================
+# Port: 6306
+
+# ============================================================================
+# STAGE 1: DEPENDENCY BUILDER
+# ============================================================================
+FROM python:3.12-slim-bookworm as dependency-builder
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_SYSTEM_PYTHON=1 \
+    UV_PYTHON=python3.12
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir uv
+
+WORKDIR /build
+
+COPY pyproject.toml ./
+COPY uv.lock* ./
+
+RUN uv pip install \
+    --no-cache \
+    --target /build/packages \
+    -r pyproject.toml
+
+# ============================================================================
+# STAGE 2: RUNTIME
+# ============================================================================
+FROM python:3.12-slim-bookworm
+
+ARG BUILD_DATE="2026-02-22"
+ARG VERSION="0.1.0"
+
+LABEL org.opencontainers.image.title="Redesign Service"
+LABEL org.opencontainers.image.description="AI-powered website redesign microservice with screenshot rendering"
+LABEL org.opencontainers.image.version="${VERSION}"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app \
+    PATH="/usr/local/bin:/app/bin:${PATH}" \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    ca-certificates \
+    tzdata \
+    libnss3 \
+    libatk-bridge2.0-0 \
+    libdrm2 \
+    libxkbcommon0 \
+    libgbm1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Non-root user
+RUN useradd --create-home --shell /sbin/nologin redesignservice && \
+    mkdir -p /app /app/logs /app/data && \
+    chown -R redesignservice:redesignservice /app
+
+WORKDIR /app
+
+# Copy Python packages from builder
+COPY --from=dependency-builder /build/packages /usr/local/lib/python3.12/site-packages
+
+# Copy application code
+COPY --chown=redesignservice:redesignservice . .
+
+# Verify core dependencies, install Playwright Chromium, and set up directories
+RUN python -c "import fastapi; import sqlalchemy; print('Dependencies OK')" && \
+    PLAYWRIGHT_BROWSERS_PATH=/home/redesignservice/.cache/ms-playwright \
+    python -m playwright install --with-deps chromium && \
+    mkdir -p /app/logs /app/data && \
+    chmod 755 /app/logs /app/data && \
+    chown -R redesignservice:redesignservice /app
+
+USER 1000:1000
+
+# ============================================================================
+# PORT: 6306 (Redesign Service)
+# ============================================================================
+EXPOSE 6306/tcp
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:6306/health || exit 1
+
+# 2 worker(s)
+CMD ["python", "-m", "uvicorn", "src.asgi:app", \
+     "--host", "0.0.0.0", \
+     "--port", "6306", \
+     "--workers", "2", \
+     "--loop", "uvloop", \
+     "--http", "httptools"]

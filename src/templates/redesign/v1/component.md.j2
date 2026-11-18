@@ -1,0 +1,112 @@
+Redesign the "{{ component_type }}" component from the following web page.
+Output a self-contained HTML snippet using Tailwind CSS classes that works both standalone and when embedded in a full page.
+
+## Component Type: {{ component_type }}
+
+### Current Component HTML
+```html
+{{ component_html }}
+```
+
+## Page Context
+- URL: {{ url }}
+- Page type: {{ page_type or 'unknown' }}
+
+## Brand Colors
+- Primary: {{ primary_color }}
+- Secondary: {{ secondary_color }}
+
+{% if findings_text %}
+## Issues to Address
+{{ findings_text }}
+{% endif %}
+
+{% if design_tips %}
+## Component-Specific Design Tips
+{{ design_tips }}
+{% endif %}
+
+## Design Direction: {{ style }}
+{{ style_desc }}
+
+{% if context_block %}
+## Additional Context
+{{ context_block }}
+{% endif %}
+
+## Component-Type Guidance
+
+{% if component_type == 'navbar' or component_type == 'navigation' %}
+- Keep navigation items clearly visible and accessible
+- Include a mobile hamburger menu for responsive behavior
+- Ensure the logo/brand mark is prominent and links to the homepage
+- Use sticky/fixed positioning so the navbar remains visible on scroll
+- Highlight the active page link with a visual indicator
+- Place the primary CTA (e.g., "Sign Up", "Get Started") on the right side with a contrasting button style
+- Ensure dropdown menus (if any) are keyboard-navigable
+{% elif component_type == 'hero' %}
+- Create strong visual impact with a clear value proposition
+- Place the primary CTA above the fold with high contrast
+- Use a compelling headline (H1) with a supporting subheadline
+- Include social proof elements if available (e.g., customer count, ratings)
+- Ensure the hero image or background does not reduce text readability
+- Add adequate padding and whitespace to let the message breathe
+{% elif component_type == 'footer' %}
+- Organize links into logical columns (Product, Company, Resources, Legal)
+- Include contact information and social media links
+- Add a newsletter signup form if appropriate
+- Keep the copyright notice and legal links at the very bottom
+- Use a muted background color to visually separate from main content
+- Ensure all links have adequate spacing for touch targets on mobile
+{% elif component_type == 'sidebar' %}
+- Maintain a clear visual hierarchy with section headings
+- Use collapsible sections for long lists of links or filters
+- Ensure the sidebar does not compete visually with main content
+- Make it sticky on desktop so it stays in view while scrolling
+- Hide or convert to a drawer/overlay on mobile breakpoints
+{% elif component_type == 'card' or component_type == 'cards' %}
+- Use consistent card dimensions and spacing within a grid
+- Include a clear visual focal point (image, icon, or color accent)
+- Keep card content concise: heading, short description, CTA
+- Add hover/focus states for interactive cards
+- Ensure cards stack vertically on mobile
+{% elif component_type == 'form' %}
+- Group related fields logically with clear labels
+- Use inline validation and helpful error messages
+- Make the submit button prominent and descriptive (not just "Submit")
+- Ensure proper tab order and keyboard accessibility
+- Add placeholder text only as supplementary hints, not as labels
+{% elif component_type == 'header' %}
+- Establish clear visual hierarchy with the page or section title
+- Include breadcrumbs or contextual navigation if appropriate
+- Use brand colors consistently
+- Ensure adequate contrast between text and background
+{% elif component_type == 'cta' or component_type == 'call-to-action' %}
+- Use a contrasting button color that stands out from surrounding content
+- Write action-oriented button text (e.g., "Start Free Trial" not "Click Here")
+- Add urgency or benefit-driven supporting text
+- Ensure the CTA is large enough for easy tapping on mobile
+- Surround with whitespace to draw the eye
+{% elif component_type == 'testimonial' or component_type == 'testimonials' %}
+- Include author photos, names, and titles/companies for credibility
+- Add star ratings or score indicators where applicable
+- Use quotation styling to visually distinguish testimonial text
+- Rotate or display multiple testimonials if content is available
+{% else %}
+- Follow general best practices for this component type
+- Ensure clear visual hierarchy and consistent spacing
+- Use the brand color palette effectively
+- Make the component responsive across all breakpoints
+{% endif %}
+
+## Requirements
+1. Preserve all existing content exactly -- do not invent or remove text
+2. Use Tailwind CSS utility classes for all styling
+3. The component must work both as a standalone snippet and when embedded inside a full page layout
+4. Apply the brand color palette using Tailwind's arbitrary value syntax (e.g., `bg-[{{ primary_color }}]`) or closest Tailwind color classes
+5. Ensure the component is fully responsive (mobile-first approach)
+6. Include appropriate hover and focus states for interactive elements
+7. Use semantic HTML elements (nav, header, footer, section, article, etc.)
+8. Ensure color contrast meets WCAG AA standards
+
+Output ONLY the HTML in a ```html code block.

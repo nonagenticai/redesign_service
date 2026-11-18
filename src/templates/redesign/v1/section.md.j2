@@ -1,0 +1,83 @@
+Redesign the "{{ section_type }}" section of this web page.
+Output a self-contained HTML snippet using Tailwind CSS classes.
+
+## Context
+- Page: {{ url }} ({{ page_type or 'unknown' }})
+- Section: {{ section_type }}
+- Current heading: {{ heading }}
+- Current content preview: {{ text_preview }}
+- Audience: {{ audience }}
+- Brand colors: primary={{ primary_color }}, secondary={{ secondary_color }}
+- Issues: {{ findings_text }}
+
+## Design Direction: {{ style }}
+{{ style_desc }}
+
+## Section-Type Guidance
+
+{% if section_type == 'hero' %}
+### Hero Section Best Practices
+- Create strong visual impact with a full-width or near-full-width layout
+- Place a clear, compelling CTA above the fold with a high-contrast button
+- Lead with a concise value proposition in the H1 headline
+- Add a supporting subheadline that expands on the benefit
+- Use a hero image or gradient background that reinforces the brand
+- Include social proof near the CTA (e.g., "Trusted by 10,000+ teams")
+- Ensure the entire hero is visible without scrolling on common viewports
+{% elif section_type == 'features' %}
+### Features Section Best Practices
+- Use a scannable grid or card layout (2-3 columns on desktop, stacked on mobile)
+- Include an icon or illustration for each feature to aid visual scanning
+- Write clear, benefit-oriented headings for each feature
+- Keep feature descriptions concise (1-2 sentences)
+- Maintain consistent card sizing and spacing
+- Consider a "Learn more" link per feature for deeper exploration
+{% elif section_type == 'pricing' %}
+### Pricing Section Best Practices
+- Use a comparison table or side-by-side card layout for plans
+- Visually highlight the recommended or most popular plan with a border, badge, or scale difference
+- Make CTAs prominent and distinct for each plan ("Start Free", "Go Pro", "Contact Sales")
+- List features with checkmarks or icons for easy scanning
+- Show monthly/annual toggle if both billing options exist
+- Keep the pricing clear and unambiguous -- no hidden fees
+{% elif section_type == 'testimonials' %}
+### Testimonials Section Best Practices
+- Display social proof prominently: real names, titles, company names
+- Include author photos (or placeholder avatars) to add credibility
+- Use star ratings or numeric scores where available
+- Style quotation marks or pull-quote formatting for visual distinction
+- Show 2-3 testimonials at a time; use a carousel or grid for more
+- Add company logos if the testimonials come from notable brands
+{% elif section_type == 'cta' %}
+### CTA Section Best Practices
+- Add urgency elements where authentic (e.g., "Limited time", "Join 5,000+ users")
+- Use a contrasting button color that pops against the section background
+- Write a clear benefit statement as the heading (e.g., "Start saving 10 hours a week")
+- Keep the section focused -- one primary action, minimal distractions
+- Add a secondary supporting line below the heading for reassurance
+- Surround the CTA with generous whitespace to draw the eye
+{% elif section_type == 'faq' %}
+### FAQ Section Best Practices
+- Use an accordion-style layout so users can expand/collapse answers
+- Group questions into clear categories if there are many
+- Write questions in the user's voice (e.g., "How do I cancel?" not "Cancellation Policy")
+- Keep answers concise and scannable; use bullet points where appropriate
+- Consider a search bar or filter for large FAQ sets
+- Link to related support articles or contact options at the bottom
+{% else %}
+### General Section Best Practices
+- Ensure clear visual hierarchy with a section heading and supporting content
+- Use consistent spacing and alignment with the rest of the page
+- Make the section responsive across all breakpoints
+{% endif %}
+
+## Requirements
+1. Output a single HTML section element with Tailwind classes
+2. Preserve the actual content (don't invent text)
+3. Make it visually compelling and conversion-optimized
+4. Use the brand colors
+5. Ensure the section is fully responsive (mobile-first, using `sm:`, `md:`, `lg:` breakpoints)
+6. Use semantic HTML elements within the section
+7. Include proper accessibility attributes (alt text, aria-labels, sufficient color contrast)
+
+Output ONLY the HTML in a ```html code block.
